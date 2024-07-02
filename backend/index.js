@@ -3,9 +3,12 @@ const app = express();
 const mongoose = require('mongoose');
 const port = 3001;
 const Contact = require("./models/Contact.model.js");
+const cors = require("cors");
 
 // middleware
+app.use(cors());
 app.use(express.json());
+
 
 app.get('/', (req, res) => {
     res.send('Hello World!')
@@ -32,7 +35,7 @@ app.get("/contacts", async (req, res) => {
 app.delete("/contacts/:id", async (req, res) => {
     try {
         const id = req.params.id;
-        await Contact.findByIdAndDelete();
+        await Contact.findByIdAndDelete(id);
 
         res.status(200).json({
             error: false,
