@@ -6,13 +6,54 @@ import DataTable from 'react-data-table-component';
 function App() {
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    id: null,
+    name: '',
+    city: ''
+  });
 
-  const handleEdit = (row) => {
-    console.log(row);
 
+  const handleEditBtn = (row) => {
+    // console.log(row);
+
+    setFormData({
+      id: row._id,
+      name: row.name || '',
+      city: row.city || ''
+    });
+    document.getElementById('my_modal_1').showModal();
   }
 
-  
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
+  };
+
+  // fetch data 
+  const fetchData = () => {
+    setLoading(true);
+    axios.get("http://localhost:3001/contacts").then((res) => {
+      setContacts(res.data.contacts);
+    }).catch((err) => {
+
+    }).finally(() => { setLoading(false) })
+  }
+
+  // handle update contact
+  const handleUpdate = () => {
+    setLoading(true)
+    axios.put(`http://localhost:3001/contacts/${formData.id}`, formData).then((res) => {
+      console.log(res)
+      fetchData();
+      document.getElementById('my_modal_1').close();
+    }).catch((er) => console.log(er.message))
+      .finally(() => { setLoading(false) })
+  }
+
+
   const columns = [
     {
       name: 'Name',
@@ -28,7 +69,7 @@ function App() {
       name: 'Actions',
       cell: row => (
         <div className='flex w-20'>
-          <button className="btn primary btn-sm" onClick={() => handleEdit(row)}>Edit</button>
+          <button className="btn primary btn-sm" onClick={() => handleEditBtn(row)}>Edit</button>
           <button className="btn danger btn-sm" onClick={() => handleDelete(row)} style={{ marginLeft: 8 }}>Delete</button>
         </div>
       ),
@@ -39,12 +80,7 @@ function App() {
   ];
 
   useEffect(() => {
-    setLoading(true);
-    axios.get("http://localhost:3001/contacts").then((res) => {
-      setContacts(res.data.contacts);
-    }).catch((err) => {
-
-    }).finally(() => { setLoading(false) })
+    fetchData();
   }, []);
 
 
@@ -87,6 +123,31 @@ function App() {
           </table> */}
         </div>
       </div>
+
+
+      <dialog id="my_modal_1" className="modal">
+        <div className="modal-box">
+
+          <h3 className="font-bold text-lg mb-4">Update Contact</h3>
+
+
+          <form onSubmit={(e) => e.preventDefault()}>
+            <input type="text" value={formData.name} onChange={handleChange} name='name' placeholder="Name" className="mb-3 input input-bordered w-full max-w-xs" />
+            <input type="text" value={formData.city} onChange={handleChange} name='city' placeholder="City" className="mb-3 input input-bordered w-full max-w-xs" />
+          </form>
+
+
+          <div className="modal-action">
+            <button type='submit' className="btn" onClick={handleUpdate} disabled={loading}>
+              {loading && <span className="loading loading-spinner loading-xs text-error"></span>}  Update
+            </button>
+            <form method="dialog">
+              {/* if there is a button in form, it will close the modal */}
+              <button className="btn">Close</button>
+            </form>
+          </div>
+        </div>
+      </dialog>
     </>
   )
 }
