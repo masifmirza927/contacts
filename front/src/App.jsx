@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react'
 import './App.css'
 import axios from "axios";
 import DataTable from 'react-data-table-component';
+import Card from './components/Card';
+import Avatar from './components/Avatar';
+import AddForm from './components/AddForm';
 
 function App() {
   const [contacts, setContacts] = useState([]);
@@ -42,7 +45,7 @@ function App() {
   // hanle edit button
   const handleEditBtn = (row) => {
     console.log(row);
-    setFormdata( {
+    setFormdata({
       id: row._id,
       name: row.name,
       city: row.city,
@@ -61,37 +64,47 @@ function App() {
     });
   }
 
-const fetchData = () => {
-  setLoading(true);
+  const fetchData = () => {
+    setLoading(true);
     axios.get("http://localhost:3001/contacts").then((res) => {
       setContacts(res.data.contacts);
     }).catch((err) => {
 
     }).finally(() => { setLoading(false) })
-}
+  }
 
-// handle update api call
-const handleUpdateApi = () => {
-  
-  setLoading(true);
+  // handle update api call
+  const handleUpdateApi = () => {
 
-    axios.put(`http://localhost:3001/contacts/${formdata.id}`, formdata).then( (res) => {
+    setLoading(true);
+
+    axios.put(`http://localhost:3001/contacts/${formdata.id}`, formdata).then((res) => {
       console.log("successfully updated");
       fetchData();
       document.getElementById('my_modal_1').close();
-      
+
     }).catch(err => console.log(err.message))
-    .finally( () => setLoading(false))
-}
+      .finally(() => setLoading(false))
+  }
 
   useEffect(() => {
     fetchData();
   }, []);
 
 
+  const [fruits, setFruits] = useState(['apple']);
+
+  const addFruit = (fruit) => {
+    const newF = [...fruits, fruit];
+    setFruits(newF);
+  }
+
   return (
     <>
       <div className='pt-5 h-screen max-w-[1200px] bg-gray-100 mx-auto'>
+
+        <Card fruits={fruits} addFruit={addFruit} />
+
         <h1 className='text-4xl text-blue-500 text-center'>My Contacts</h1>
         <div className='my-5 p-5'>
           <DataTable
@@ -121,10 +134,10 @@ const handleUpdateApi = () => {
           </div>
 
           <div className="modal-action">
-            <button className="btn" onClick={ handleUpdateApi } disabled={loading}>
+            <button className="btn" onClick={handleUpdateApi} disabled={loading}>
               {loading && <span className="loading loading-spinner text-error loading-sm"></span>}
               Update
-              </button>
+            </button>
 
             <form method="dialog">
               {/* if there is a button in form, it will close the modal */}
